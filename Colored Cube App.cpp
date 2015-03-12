@@ -41,12 +41,12 @@ private:
 	QuadObject end;
 	Line line;
 	Box mBox, redBox, greenBox;
-	GameObject gameObject1, gameObject2, gameObject3, spinner;
+	GameObject gameObject1;
 	LineObject xLine, yLine, zLine;
 
-	GameObject walls[100];
+	GameObject walls[1000];
 
-	GameObject fruits[100];
+	GameObject fruits[1000];
 
 	float spinAmount;
 
@@ -66,6 +66,9 @@ private:
 
 	float mTheta;
 	float mPhi;
+
+	void loadLevel(int walls, int fruits);
+	void clearLevel();
 
 };
 
@@ -131,24 +134,67 @@ void ColoredCubeApp::initApp()
 	end.setAngleX(-90);
 
 	spinAmount = 0;
-	spinner.init(&redBox, 0, Vector3(0,4,0), Vector3(0,0,0), 0,1);
 
-	gameObject1.init(&mBox, sqrt(2.0f), Vector3(0,0,0), Vector3(0,0,0), 0,1);
-	gameObject2.init(&redBox, sqrt(2.0f), Vector3(4,0,0), Vector3(0,0,0), 0,1);
-	gameObject3.init(&redBox, sqrt(2.0f), Vector3(-4,0,0), Vector3(0,0,0), 0,1);
+	gameObject1.init(&mBox, sqrt(1.0f), Vector3(0,0,0), Vector3(0,0,0), 0,1);
 
-	for(int i = 0 ; i < 100; i++)
+	for(int i = 0 ; i < 1000; i++)
 	{
-		walls[i].init(&redBox,sqrt(2.0f),Vector3(rand()%100-50,0,rand()%1000-50),Vector3(0,0,0),0,1);
-		fruits[i].init(&greenBox,sqrt(2.0f),Vector3(rand()%100-50,0,rand()%1000-50),Vector3(0,0,0),0,1);
+		fruits[i].init(&greenBox,1,Vector3(0,0,0),Vector3(0,0,0),0,0);
+		walls[i].init(&redBox,1,Vector3(0,0,0),Vector3(0,0,0),0,0);
 	}
 
 
 	//gameObject1.setVelocity(D3DXVECTOR3(2,0,0));
-	gameObject1.setRadius(2);
+	gameObject1.setRadius(1);
+
+	loadLevel(500,10);
 	buildFX();
 	buildVertexLayouts();
 
+}
+
+void ColoredCubeApp::loadLevel(int wallNum, int fruitNum)
+{
+	clearLevel();
+	for(int i = 0 ; i < min(wallNum,1000); i++)
+	{
+		walls[i].setPosition(Vector3(rand()%100-50,0,rand()%980+20));
+		walls[i].setActive();
+		for(int j = 0 ; j < i; j++)
+		{
+			if(walls[i].collided(&walls[j]))
+			{
+				walls[i].setInActive();
+				i--;
+				break;
+			}
+		}
+
+	}
+
+	for(int i = 0 ; i < min(fruitNum,1000); i++)
+	{
+		fruits[i].setPosition(Vector3(rand()%100-50,0,rand()%980+20));
+		fruits[i].setActive();
+		for(int j = 0 ; j < min(wallNum,1000); j++)
+		{
+			if(fruits[i].collided(&walls[j]))
+			{
+				fruits[i].setInActive();
+				i--;
+				break;
+			}
+		}
+	}
+
+}
+void ColoredCubeApp::clearLevel()
+{
+	for(int i = 0 ; i < 100; i++)
+	{
+		walls[i].setInActive();
+		fruits[i].setInActive();
+	}
 }
 
 void ColoredCubeApp::onResize()
@@ -163,41 +209,44 @@ void ColoredCubeApp::updateScene(float dt)
 {
 	D3DApp::updateScene(dt);
 	gameObject1.update(dt);
-	gameObject2.update(dt);
-	gameObject3.update(dt);
-	spinner.update(dt);
+
 	xLine.update(dt);
 	yLine.update(dt);
 	zLine.update(dt);
 	quad1.update(dt);
 	quad2.update(dt);
-	end.update(dt);
 
-	for(int i = 0; i < 100; i++)
+	for(int i = 0; i < 1000; i++)
 	{
 		walls[i].update(dt);
 		fruits[i].update(dt);
 	}
 
-	Vector3 input(0,0,0);
+	Vector3 input(0,0,1);
 
 	// Update angles based on input to orbit camera around box.
 	if(GetAsyncKeyState('W') & 0x8000)	input.z+=1;
 	if(GetAsyncKeyState('A') & 0x8000)	input.x-=1;
-	if(GetAsyncKeyState('S') & 0x8000)	input.z-=1;
+	if(GetAsyncKeyState('S') & 0x8000)	input.z-=0.5;
 	if(GetAsyncKeyState('D') & 0x8000)	input.x+=1;
 
 	D3DXVec3Normalize(&input,&input);
+	
+	static float movement_penalty = 1;
+	
 
-	input *= 500;
+	input *= 5;
 
 	static bool collidingLastFrame = false;
 	bool collidingThisFrame = false;
 
-	for(int i = 0; i < 100; i++)
+	for(int i = 0; i < 1000; i++)
 	{
 		if(gameObject1.collided(&walls[i]))
-			collidingThisFrame = true;
+		{
+			walls[i].setInActive();
+			movement_penalty = 0;
+		}
 		if(gameObject1.collided(&fruits[i]))
 			fruits[i].setInActive();
 	}
@@ -220,6 +269,13 @@ void ColoredCubeApp::updateScene(float dt)
 		gameObject1.setVelocity(input);
 
 
+	movement_penalty = min(1,movement_penalty+dt/2);
+	input *= 20*movement_penalty;
+	gameObject1.setVelocity(input);
+	gameObject1.update(dt);
+	Vector3 p = gameObject1.getPosition();
+	p.x = max(min(50,p.x),-50);
+	gameObject1.setPosition(p);
 
 
 // COLLISION DETECTION HERE
@@ -313,21 +369,6 @@ void ColoredCubeApp::drawScene()
 	gameObject1.setMTech(mTech);
 	gameObject1.draw();
 
-	mWVP = gameObject2.getWorldMatrix()*mView*mProj;
-	mfxWVPVar->SetMatrix((float*)&mWVP);
-	foo[0] = 0;
-	mfxFLIPVar->SetRawValue(&foo[0], 0, sizeof(int));
-	gameObject2.setMTech(mTech);
-	gameObject2.draw();
-
-
-	mWVP = gameObject3.getWorldMatrix()*mView*mProj;
-	foo[0] = 0;
-	mfxFLIPVar->SetRawValue(&foo[0], 0, sizeof(int));
-	mfxWVPVar->SetMatrix((float*)&mWVP);
-	gameObject3.setMTech(mTech);
-	gameObject3.draw();
-
 	//mWVP = end.getWorldMatrix()*mView*mProj;
 	//foo[0] = 0;
 	//mfxFLIPVar->SetRawValue(&foo[0], 0, sizeof(int));
@@ -335,7 +376,8 @@ void ColoredCubeApp::drawScene()
 	//end.setMTech(mTech);
 	//end.draw();
  //   
-	for(int i = 0; i < 100; i++)
+    
+	for(int i = 0; i < 1000; i++)
 	{
 		mWVP = walls[i].getWorldMatrix()*mView*mProj;
 		foo[0] = 0;
@@ -345,7 +387,7 @@ void ColoredCubeApp::drawScene()
 		walls[i].draw();
 	}
 
-	for(int i = 0; i < 100; i++)
+	for(int i = 0; i < 1000; i++)
 	{
 		mWVP = fruits[i].getWorldMatrix()*mView*mProj;
 		foo[0] = 0;
@@ -355,20 +397,7 @@ void ColoredCubeApp::drawScene()
 		fruits[i].draw();
 	}
 
-	//draw the spinning box
-	if (ToRadian(spinAmount*40) > PI)
-		foo[0] = 1;
-	else
-		foo[0] = 0;
-	mfxFLIPVar->SetRawValue(&foo[0], 0, sizeof(int));
-	Matrix spin;
-	RotateY(&spin, ToRadian(spinAmount*40));
-	Matrix translate;
-	Translate(&translate, 5, 0, 0);
-	mWVP = spinner.getWorldMatrix() *translate * spin  *mView*mProj;
-	mfxWVPVar->SetMatrix((float*)&mWVP);
-	spinner.setMTech(mTech);
-	spinner.draw();
+	
 
 
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
