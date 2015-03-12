@@ -172,10 +172,10 @@ void ColoredCubeApp::updateScene(float dt)
 	Vector3 input(0,0,0);
 
 	// Update angles based on input to orbit camera around box.
-	if(GetAsyncKeyState('J') & 0x8000)	input.x=-1;
-	if(GetAsyncKeyState('L') & 0x8000)	input.x=1;
-	if(GetAsyncKeyState('I') & 0x8000)	input.z=1;
-	if(GetAsyncKeyState('K') & 0x8000)	input.z=-1;
+	if(GetAsyncKeyState('W') & 0x8000)	input.z+=1;
+	if(GetAsyncKeyState('A') & 0x8000)	input.x-=1;
+	if(GetAsyncKeyState('S') & 0x8000)	input.z-=1;
+	if(GetAsyncKeyState('D') & 0x8000)	input.x+=1;
 
 	D3DXVec3Normalize(&input,&input);
 
@@ -212,11 +212,6 @@ void ColoredCubeApp::updateScene(float dt)
 	if (ToRadian(spinAmount*40)>2*PI)
 		spinAmount = 0;
 
-	// Update angles based on input to orbit camera around box.
-	if(GetAsyncKeyState('A') & 0x8000)	mTheta -= 2.0f*dt;
-	if(GetAsyncKeyState('D') & 0x8000)	mTheta += 2.0f*dt;
-	if(GetAsyncKeyState('W') & 0x8000)	mPhi -= 2.0f*dt;
-	if(GetAsyncKeyState('S') & 0x8000)	mPhi += 2.0f*dt;
 
 	// Restrict the angle mPhi.
 	if( mPhi < 0.1f )	mPhi = 0.1f;
@@ -229,7 +224,7 @@ void ColoredCubeApp::updateScene(float dt)
 	float y =  25.0f*cosf(mPhi);
 
 	// Build the view matrix.
-	D3DXVECTOR3 pos(0, 50, 0);
+	D3DXVECTOR3 pos(0, 3, -15);
 	pos += gameObject1.getPosition();
 	D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
 	target = gameObject1.getPosition();
