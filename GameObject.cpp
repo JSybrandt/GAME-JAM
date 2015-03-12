@@ -57,3 +57,13 @@ bool GameObject::collided(GameObject *gameObject)
 		return true;
 	return false;
 }
+
+bool GameObject::collided(Quad *quad)
+{
+	float diff = position.z - quad->getPosition().z;
+	float length = pow(diff,2);
+	float radii = radiusSquared + quad->getRad();
+	if (length <= radii)
+		return true;
+	return false;
+}

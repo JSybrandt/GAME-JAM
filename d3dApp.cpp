@@ -2,7 +2,7 @@
 // d3dApp.cpp by Frank Luna (C) 2008 All Rights Reserved.
 //=======================================================================================
 
-#include "C:\Users\SybrandtJG1\Desktop\GAMES\PartII\Common\d3dApp.h"
+#include "d3dApp.h"
 #include <sstream>
 
 LRESULT CALLBACK
@@ -48,7 +48,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 
 	mMainWndCaption = L"D3D10 Application";
 	md3dDriverType  = D3D10_DRIVER_TYPE_HARDWARE;
-	mClearColor     = D3DXCOLOR(1.0f, 0.0f, 1.0f, 1.0f);
+	mClearColor     = D3DXCOLOR(0.5f, 0.0f, 1.0f, 1.0f);
 	mClientWidth    = 800;
 	mClientHeight   = 600;
 }

@@ -14,6 +14,7 @@
 #include "GameObject.h"
 #include "Line.h"
 #include "Quad.h"
+#include "QuadObject.h"
 #include <d3dx9math.h>
 #include "LineObject.h"
 
@@ -36,6 +37,8 @@ private:
  
 private:
 	Quad quad1;
+	Quad quad2;
+	QuadObject end;
 	Line line;
 	Box mBox, redBox, greenBox;
 	GameObject gameObject1, gameObject2, gameObject3, spinner;
@@ -118,8 +121,14 @@ void ColoredCubeApp::initApp()
 	zLine.setPosition(Vector3(0,0,0));
 	zLine.setRotationY(ToRadian(90));
 
-	quad1.init(md3dDevice, 10, CYAN);
+	quad1.init(md3dDevice, Vector3(10,10,10), CYAN);
 	quad1.setPosition(Vector3(0,-1.2,0));
+	quad2.init(md3dDevice, Vector3(100,1,100), BLUE);
+	quad2.setPosition(Vector3(0,0,1000));
+	quad2.setRotXAngle(90);
+	
+	end.init(&quad2, 1, quad2.getPosition(), Vector3(0,0,0), 0, 1000);
+	end.setAngleX(-90);
 
 	spinAmount = 0;
 	spinner.init(&redBox, 0, Vector3(0,4,0), Vector3(0,0,0), 0,1);
@@ -130,8 +139,8 @@ void ColoredCubeApp::initApp()
 
 	for(int i = 0 ; i < 100; i++)
 	{
-		walls[i].init(&redBox,sqrt(2.0f),Vector3(rand()%100-50,0,rand()%100-50),Vector3(0,0,0),0,1);
-		fruits[i].init(&greenBox,sqrt(2.0f),Vector3(rand()%100-50,0,rand()%100-50),Vector3(0,0,0),0,1);
+		walls[i].init(&redBox,sqrt(2.0f),Vector3(rand()%100-50,0,rand()%1000-50),Vector3(0,0,0),0,1);
+		fruits[i].init(&greenBox,sqrt(2.0f),Vector3(rand()%100-50,0,rand()%1000-50),Vector3(0,0,0),0,1);
 	}
 
 
@@ -161,13 +170,14 @@ void ColoredCubeApp::updateScene(float dt)
 	yLine.update(dt);
 	zLine.update(dt);
 	quad1.update(dt);
+	quad2.update(dt);
+	end.update(dt);
 
 	for(int i = 0; i < 100; i++)
 	{
 		walls[i].update(dt);
 		fruits[i].update(dt);
 	}
-	
 
 	Vector3 input(0,0,0);
 
@@ -179,7 +189,7 @@ void ColoredCubeApp::updateScene(float dt)
 
 	D3DXVec3Normalize(&input,&input);
 
-	input *= 5;
+	input *= 500;
 
 	static bool collidingLastFrame = false;
 	bool collidingThisFrame = false;
@@ -190,6 +200,11 @@ void ColoredCubeApp::updateScene(float dt)
 			collidingThisFrame = true;
 		if(gameObject1.collided(&fruits[i]))
 			fruits[i].setInActive();
+	}
+
+	if(gameObject1.collided(&quad2)) {
+		collidingThisFrame = true;
+		gameObject1.setVelocity(Vector3(0,0,0));
 	}
 
 	if(collidingThisFrame)
@@ -283,6 +298,15 @@ void ColoredCubeApp::drawScene()
        quad1.draw();
     }
 
+	mWVP = quad2.getWorld()*mView*mProj;
+	mfxWVPVar->SetMatrix((float*)&mWVP);
+    mTech->GetDesc( &techDesc );
+	for(UINT p = 0; p < techDesc.Passes; ++p)
+    {
+        mTech->GetPassByIndex( p )->Apply(0);
+       quad2.draw();
+    }
+
 	//draw the boxes
 	mWVP = gameObject1.getWorldMatrix()  *mView*mProj;
 	mfxWVPVar->SetMatrix((float*)&mWVP);
@@ -303,7 +327,14 @@ void ColoredCubeApp::drawScene()
 	mfxWVPVar->SetMatrix((float*)&mWVP);
 	gameObject3.setMTech(mTech);
 	gameObject3.draw();
-    
+
+	//mWVP = end.getWorldMatrix()*mView*mProj;
+	//foo[0] = 0;
+	//mfxFLIPVar->SetRawValue(&foo[0], 0, sizeof(int));
+	//mfxWVPVar->SetMatrix((float*)&mWVP);
+	//end.setMTech(mTech);
+	//end.draw();
+ //   
 	for(int i = 0; i < 100; i++)
 	{
 		mWVP = walls[i].getWorldMatrix()*mView*mProj;

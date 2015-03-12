@@ -3,6 +3,7 @@
 #define QUAD_H
 
 #include "d3dUtil.h"
+//#include "GameObject.h"
 
 #include "constants.h"
 class Quad
@@ -13,7 +14,7 @@ public:
 	~Quad();
 
 	void init(ID3D10Device* device, float scale);
-	void init(ID3D10Device* device, float scale, D3DXCOLOR c);
+	void init(ID3D10Device* device, Vector3 scale, D3DXCOLOR c);
 	void draw();
 	void setWorld(Matrix w) {world = w;}
 	Matrix getWorld() {return world;}
@@ -23,6 +24,8 @@ public:
 	void setRotZAngle(float angle) {rotZ = angle;}
 	void setPosition(Vector3 pos) {position = pos;}
 	Vector3 getPosition() {return position;}
+	float getRad() {return rad;}
+	//bool collided(GameObject *obj);
 
 private:
 	DWORD mNumVertices;
@@ -32,7 +35,7 @@ private:
 	ID3D10Buffer* mVB;
 	ID3D10Buffer* mIB;
 
-	float rotX, rotY, rotZ;
+	float rotX, rotY, rotZ, rad;
 	Matrix world;
 	Vector3 position;
 };

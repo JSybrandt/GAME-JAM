@@ -6,6 +6,7 @@
 Quad::Quad()
 : mNumVertices(0), mNumFaces(0), md3dDevice(0), mVB(0), mIB(0)
 {
+	rad = 1;
 	rotX = 0;
 	rotY = 0;
 	rotZ = 0;
@@ -17,7 +18,7 @@ Quad::~Quad()
 	ReleaseCOM(mVB);
 	ReleaseCOM(mIB);
 }
-void Quad::init(ID3D10Device* device, float scale, D3DXCOLOR c)
+void Quad::init(ID3D10Device* device, Vector3 scale, D3DXCOLOR c)
 {
 	md3dDevice = device;
  
@@ -35,8 +36,11 @@ void Quad::init(ID3D10Device* device, float scale, D3DXCOLOR c)
     };
 
 	// Scale the Quad.
-	for(DWORD i = 0; i < mNumVertices; ++i)
-		vertices[i].pos *= scale;
+	for(DWORD i = 0; i < mNumVertices; ++i) {
+		vertices[i].pos.x *= scale.x;
+		vertices[i].pos.y *= scale.y;
+		vertices[i].pos.z *= scale.z;
+	}
     D3D10_BUFFER_DESC vbd;
     vbd.Usage = D3D10_USAGE_IMMUTABLE;
     vbd.ByteWidth = sizeof(Vertex) * mNumVertices;
@@ -85,3 +89,13 @@ UINT stride = sizeof(Vertex);
 	md3dDevice->IASetIndexBuffer(mIB, DXGI_FORMAT_R32_UINT, 0);
 	md3dDevice->DrawIndexed(mNumFaces*3, 0, 0);
 }
+
+//bool Quad::collided(GameObject *obj)
+//{
+//	Vector3 diff = position - obj->getPosition();
+//	float length = D3DXVec3LengthSq(&diff);
+//	float radii = rad + obj->getRadiusSquare();
+//	if (length <= radii)
+//		return true;
+//	return false;
+//}

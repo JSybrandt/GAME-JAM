@@ -1,21 +1,22 @@
 
-#ifndef GameObject_H
-#define GameObject_H
+#ifndef QuadObject_H
+#define QuadObject_H
 
 #include "d3dUtil.h"
-#include "Quad.h"
 
-#include "Box.h"
+
+#include "Quad.h"
+#include "GameObject.h"
 #include "constants.h"
 
-class GameObject
+class QuadObject: public GameObject
 {
 public:
 
-	GameObject();
-	~GameObject();
+	QuadObject();
+	~QuadObject();
 
-	void init(Box *b, float r, Vector3 pos, Vector3 vel, float sp, float s);
+	void init(Quad *b, float r, Vector3 pos, Vector3 vel, float sp, float s);
 	void draw();
 	void update(float dt);
 
@@ -26,6 +27,7 @@ public:
 	void setSpeed(float s) {speed = s;}
 	float getSpeed() {return speed;}
 	void setRadius(float r) {radius = r; radiusSquared = (scale*r)*(scale*r);}
+	void setAngleX(float val);
 	float getRadiusSquare() {return radiusSquared;}
 	float getRadius() {return radius;}
 	Matrix getWorldMatrix() {return world;}
@@ -35,12 +37,11 @@ public:
 	void setInActive() {active = false;}
 	bool getActiveState() {return active;}
 	void setMTech(ID3D10EffectTechnique* m){ mTech = m;}
-	bool collided(GameObject *gameObject);
-	bool collided(Quad *quad);
+	bool collided(QuadObject *QuadObject);
 
 
 private:
-	Box *box; 
+	Quad *quad; 
 	Vector3 position;
 	Vector3 velocity;
 	float speed;
