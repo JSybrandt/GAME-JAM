@@ -67,6 +67,8 @@ private:
 	float mTheta;
 	float mPhi;
 
+	bool running;
+
 	void loadLevel(int walls, int fruits);
 	void clearLevel();
 
@@ -109,6 +111,8 @@ ColoredCubeApp::~ColoredCubeApp()
 void ColoredCubeApp::initApp()
 {
 	D3DApp::initApp();
+
+	running = true;
 	
 	mBox.init(md3dDevice, 1.0f, WHITE);
 	redBox.init(md3dDevice, 1.0f, RED);
@@ -207,6 +211,8 @@ void ColoredCubeApp::onResize()
 
 void ColoredCubeApp::updateScene(float dt)
 {
+	if(!running)
+		return;
 	D3DApp::updateScene(dt);
 	gameObject1.update(dt);
 
@@ -251,9 +257,11 @@ void ColoredCubeApp::updateScene(float dt)
 			fruits[i].setInActive();
 	}
 
+	//ENDZONE								
 	if(gameObject1.collided(&quad2)) {
 		collidingThisFrame = true;
-		gameObject1.setVelocity(Vector3(0,0,0));
+		running = false;
+
 	}
 
 	if(collidingThisFrame)
